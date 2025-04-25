@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  ismaelback:
+    image: proyectoisma:1
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+    networks:
+      - proyectoisma_net
+      - traefik-public
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.ismaelback.entrypoints=http"
+        - "traefik.http.routers.ismaelback.rule=Host(`ismaelback.byronrm.com`)"
+        - "traefik.http.middlewares.ismaelback-https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.routers.ismaelback.middlewares=ismaelback-https-redirect"
+        - "traefik.http.routers.ismaelback-secure.entrypoints=https"
+        - "traefik.http.routers.ismaelback-secure.rule=Host(`ismaelback.byronrm.com`)"
+        - "traefik.http.routers.ismaelback-secure.tls=true"
+        - "traefik.http.routers.ismaelback-secure.tls.certresolver=http"
+        - "traefik.http.routers.ismaelback-secure.service=ismaelback"
+        - "traefik.http.services.ismaelback.loadbalancer.server.port=8080"
+        - "traefik.docker.network=traefik-public"
+
+  ismamongodb:
+    image: mongo:8.0
+    environment:
+      - MONGO_INITDB_DATABASE=integrador
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - proyectoisma_net
+
+volumes:
+  mongodb_data:
+    external: true
+
+networks:
+  proyectoisma_net:
+    external: true
+  traefik-public:
+    external: true
